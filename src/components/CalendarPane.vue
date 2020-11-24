@@ -20,7 +20,7 @@ import {
   addDays,
   getWeeksInMonth, isSameDay,
   startOfWeek,
-  isWithinInterval, getMonth, format
+  isWithinInterval, getMonth, format,
 } from 'date-fns'
 import CalendarDay from '@/components/CalendarDay.vue'
 import { CalendarType, DateRange } from '@/lib'
@@ -28,14 +28,14 @@ import { de } from 'date-fns/locale'
 
 @Component({
   components: { CalendarDay },
-  filters: {}
+  filters: {},
 })
 export default class CalendarPane extends Vue {
   @Prop({ type: Number, required: true }) year!: number;
   @Prop({ type: Number, required: true, validator: value => value >= 0 && value < 12 }) month!: number;
   @Prop({ required: true }) type!: CalendarType;
   @Prop() previewRange!: DateRange | null;
-  @Prop() locale?: Locale;
+  @Prop({}) locale!: Locale;
 
   @Prop() value!: Date | Date[] | DateRange | null
 
@@ -87,7 +87,7 @@ export default class CalendarPane extends Vue {
         }
         if (isWithinInterval(date, {
           start: (value as DateRange).startDate,
-          end: (value as DateRange).endDate
+          end: (value as DateRange).endDate,
         })) {
           return 'between'
         }
@@ -100,7 +100,7 @@ export default class CalendarPane extends Vue {
   }
 
   weekDayName (date: Date) {
-    return format(date, 'EEEEEE', { locale: this.locale || de })
+    return format(date, 'EEEEEE', { locale: this.locale })
   }
 }
 

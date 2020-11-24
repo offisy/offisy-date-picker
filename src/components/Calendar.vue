@@ -2,9 +2,11 @@
   <div class="calendar">
     <div class="calendar-body">
       <div class="calendar-header">
-        <slot name="header">
+        <slot name="header" :addMonths="addMonths" :year="year" :month="month" :formattedMonth="formattedMonth">
           <button class="calendar-prev-button" @click="addMonths(-1)">
+            <slot name="prev-button-text">
             &lt;
+            </slot>
           </button>
 
           <h4 class="calendar-header-title">
@@ -12,7 +14,9 @@
           </h4>
 
           <button class="calendar-next-button" @click="addMonths(1)">
+            <slot name="next-button-text">
             &gt;
+            </slot>
           </button>
         </slot>
       </div>
@@ -36,8 +40,8 @@ import CalendarPane from '@/components/CalendarPane.vue'
 import { Prop, Component, Vue } from 'vue-property-decorator'
 import { CalendarType, DateRange } from '@/lib.ts'
 import { format, isSameDay } from 'date-fns'
-import { de } from 'date-fns/locale'
 import CalendarTransition from '@/components/CalendarTransition.vue'
+import defaults from '@/util/defaults'
 
 @Component({
   components: { CalendarTransition, CalendarPane }
@@ -49,7 +53,7 @@ export default class Calendar extends Vue {
   @Prop({ type: Number, required: true }) year!: number;
   @Prop({ type: Number, required: true, validator: value => value >= 0 && value < 12 }) month!: number;
 
-  @Prop() locale?: Locale;
+  @Prop({ default: () => defaults.locale }) locale!: Locale;
 
   selectionValue: Date | null = null
   hoveringValue: Date | null = null
@@ -104,7 +108,7 @@ export default class Calendar extends Vue {
 
   get formattedMonth () {
     const date = new Date(this.year, this.month)
-    return format(date, 'MMMM', { locale: this.locale || de })
+    return format(date, 'MMMM', { locale: this.locale })
   }
 
   addMonths (months: number) {

@@ -1,13 +1,33 @@
 <template>
   <div class="date-picker" v-click-outside="closeModal">
     <div class="date-picker-input" ref="input">
-      <slot>
+      <slot :onInput="onTextInput" :open="openModal" :close="closeModal" :value="textValue">
         <input type="text" v-model="textValue" @change="onTextInput" @focus="openModal">
       </slot>
     </div>
 
     <div class="calendar-popover" v-show="popoverShowing" ref="popover">
-      <calendar :type="type" :value="localValue" :month.sync="month" :year.sync="year" @input="$emit('input', $event)"/>
+      <calendar :type="type" :value="localValue" :month.sync="month" :year.sync="year" @input="localValue = $event">
+
+        <template v-for="(_, name) of $scopedSlots" v-slot:[name]="scope">
+          <slot :name="name" v-bind="scope"></slot>
+        </template>
+
+      </calendar>
+      <div class="actions-row">
+        <slot :submit="submit" :discard="discard">
+          <button :class="okClass" @click="submit">
+            <slot name="ok-button-text">
+              Ok
+            </slot>
+          </button>
+          <button :class="discardClass" @click="discard">
+            <slot name="discard-button-text">
+              Cancel
+            </slot>
+          </button>
+        </slot>
+      </div>
     </div>
   </div>
 </template>
@@ -19,14 +39,22 @@ import { CalendarType, DateRange } from '@/lib'
 import { format, parse } from 'date-fns'
 import Calendar from '@/components/Calendar.vue'
 import { createPopper } from '@popperjs/core'
+import { ClickOutside } from '@/directives/ClickOutside'
+
 @Component({
-  components: { Calendar }
+  components: { Calendar },
+  directives: {
+    'click-outside': ClickOutside,
+  },
 })
 export default class DatePicker extends Vue {
   textValue = ''
 
   @Prop() value!: Date | Date[] | DateRange | null;
   @Prop({ required: true, default: 'single' }) type!: CalendarType;
+
+  @Prop({ default: 'ok-button' }) okClass!: string;
+  @Prop({ default: 'discard-button' }) discardClass!: string;
 
   localValue: Date | Date[] | DateRange | null = null
 
@@ -39,7 +67,7 @@ export default class DatePicker extends Vue {
 
     this.$nextTick(() => {
       createPopper(this.input, this.popover, {
-        placement: 'bottom-start'
+        placement: 'bottom-start',
       })
     })
   }
@@ -64,6 +92,14 @@ export default class DatePicker extends Vue {
     switch (this.type) {
       case 'single':
         if (this.value) date = this.value as Date
+        break
+      case 'range':
+        if (this.value) date = (this.value as DateRange).startDate
+        break
+      case 'multi':
+        if (this.value && (this.value as Date[]).length > 0) {
+          date = (this.value as Date[])[0]
+        }
     }
 
     this.month = date.getMonth()
@@ -166,18 +202,85 @@ export default class DatePicker extends Vue {
 
         break
     }
+
+    this.$nextTick(() => {
+      let date = new Date()
+      switch (this.type) {
+        case 'single':
+          if (this.value) date = this.value as Date
+          break
+        case 'range':
+          if (this.value) date = (this.value as DateRange).startDate
+          break
+        case 'multi':
+          if (this.value && (this.value as Date[]).length > 0) {
+            date = (this.value as Date[])[0]
+          }
+      }
+
+      this.month = date.getMonth()
+      this.year = date.getFullYear()
+    })
+  }
+
+  submit () {
+    this.$emit('input', this.localValue)
+    this.closeModal()
+  }
+
+  discard () {
+    this.localValue = this.value
+    this.closeModal()
   }
 }
 
 </script>
 
 <style lang="scss" scoped>
+
+$primary: #0aa699;
+$danger: #f35958;
+
 .calendar-popover {
   background-color: white;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.16);
   border-radius: 4px;
   padding: 5px;
   width: 256px;
-  height: 256px;
+  height: 270px;
+  display: flex;
+  flex-direction: column;
+
+  .actions-row {
+    display: flex;
+    justify-content: flex-end;
+
+    button {
+      &.ok-button, &.discard-button {
+        border: none;
+        border-radius: 4px;
+        padding: 7px 15px;
+        cursor: pointer;
+
+        &:focus {
+          outline: none;
+        }
+      }
+
+      &.ok-button {
+        background: $primary;
+        color: white;
+      }
+
+      &.discard-button {
+        background: $danger;
+        color: white;
+      }
+
+      &:not(:first-child) {
+        margin-left: 10px;
+      }
+    }
+  }
 }
 </style>

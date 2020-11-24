@@ -1,20 +1,26 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+    <div style="display: block; width: 320px; height: 256px">
+      <date-picker type="multi" v-model="value"/>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import HelloWorld from './components/HelloWorld.vue'
+import DatePicker from '@/components/DatePicker.vue'
+
+import './lib'
 
 @Component({
   components: {
-    HelloWorld
+    DatePicker
   }
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+  value = null
+}
+
 </script>
 
 <style lang="scss">
@@ -25,5 +31,8 @@ export default class App extends Vue {}
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

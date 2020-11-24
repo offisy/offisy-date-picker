@@ -1,10 +1,12 @@
 <template>
   <div class="date-picker" v-click-outside="closeModal">
-    <slot>
-      <input type="text" v-model="textValue" @change="onTextInput" @focus="openModal">
-    </slot>
+    <div class="date-picker-input" ref="input">
+      <slot>
+        <input type="text" v-model="textValue" @change="onTextInput" @focus="openModal">
+      </slot>
+    </div>
 
-    <div class="calendar-popover" v-if="popoverShowing">
+    <div class="calendar-popover" v-show="popoverShowing" ref="popover">
       <calendar :type="type" :value="localValue" :month.sync="month" :year.sync="year" @input="$emit('input', $event)"/>
     </div>
   </div>
@@ -12,11 +14,11 @@
 
 <script lang="ts">
 
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
+import { Component, Prop, Ref, Vue, Watch } from 'vue-property-decorator'
 import { CalendarType, DateRange } from '@/lib'
 import { format, parse } from 'date-fns'
 import Calendar from '@/components/Calendar.vue'
-
+import { createPopper } from '@popperjs/core'
 @Component({
   components: { Calendar }
 })
@@ -28,9 +30,18 @@ export default class DatePicker extends Vue {
 
   localValue: Date | Date[] | DateRange | null = null
 
+  @Ref() input!: HTMLElement;
+  @Ref() popover!: HTMLElement;
+
   mounted () {
     this.localValue = this.value
     this.formatValue()
+
+    this.$nextTick(() => {
+      createPopper(this.input, this.popover, {
+        placement: 'bottom-start'
+      })
+    })
   }
 
   @Watch('value')

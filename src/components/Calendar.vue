@@ -54,7 +54,6 @@ export default class Calendar extends Vue {
   selectionValue: Date | null = null
   hoveringValue: Date | null = null
   mode: 'selecting' | null = null
-  swipeLeft = false
 
   get selectionRange (): DateRange | null {
     if (this.mode === 'selecting' && this.selectionValue && this.hoveringValue) {
@@ -192,6 +191,9 @@ $primary: #0aa699;
     height: 100%;
     display: flex;
     flex-direction: column;
+  }
+  .date-picker-input {
+    width: 100%;
   }
 }
 

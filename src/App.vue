@@ -1,8 +1,7 @@
 <template>
   <div id="app">
-    <div style="display: block; width: 320px; height: 256px">
+
       <date-picker type="multi" v-model="value"/>
-    </div>
   </div>
 </template>
 

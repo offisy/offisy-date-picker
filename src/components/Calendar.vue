@@ -1,11 +1,20 @@
 <template>
   <div class="calendar">
-    <div class="calendar-body">
+    <div class="calendar-side-pane" v-if="datePresets.length > 0">
+      <ul>
+        <li v-for="preset in datePresets" :key="preset.id" @click="selectValue(preset.value)"
+            :class="{active: isPresetSelected(preset.value)}">
+          {{ preset.name }}
+        </li>
+      </ul>
+    </div>
+
+    <div class="calendar-body" :style="{width: `${calendarWidth}px`, height: `${calendarHeight}px`}">
       <div class="calendar-header">
         <slot name="header" :addMonths="addMonths" :year="year" :month="month" :formattedMonth="formattedMonth">
           <button class="calendar-prev-button" @click="addMonths(-1)">
             <slot name="prev-button-text">
-            &lt;
+              &lt;
             </slot>
           </button>
 
@@ -15,7 +24,7 @@
 
           <button class="calendar-next-button" @click="addMonths(1)">
             <slot name="next-button-text">
-            &gt;
+              &gt;
             </slot>
           </button>
         </slot>
@@ -31,20 +40,22 @@
         @day-clicked="onDayClicked"
         @day-hovered="hoveringValue = $event"
       />
+      <slot name="actions"/>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import CalendarPane from '@/components/CalendarPane.vue'
-import { Prop, Component, Vue } from 'vue-property-decorator'
-import { CalendarType, DateRange } from '@/lib.ts'
-import { format, isSameDay } from 'date-fns'
 import CalendarTransition from '@/components/CalendarTransition.vue'
+import { CalendarType, DateRange } from '@/lib.ts'
 import defaults from '@/util/defaults'
+import { start } from '@popperjs/core'
+import { format, isSameDay } from 'date-fns'
+import { Component, Prop, Vue } from 'vue-property-decorator'
 
 @Component({
-  components: { CalendarTransition, CalendarPane }
+  components: { CalendarTransition, CalendarPane },
 })
 export default class Calendar extends Vue {
   @Prop({ required: true }) type!: CalendarType;
@@ -54,6 +65,10 @@ export default class Calendar extends Vue {
   @Prop({ type: Number, required: true, validator: value => value >= 0 && value < 12 }) month!: number;
 
   @Prop({ default: () => defaults.locale }) locale!: Locale;
+  @Prop() presets?: { [key: string]: { title: string; value: (() => (Date | DateRange)) } };
+
+  @Prop({ default: 256 }) calendarWidth!: number;
+  @Prop({ default: 256 }) calendarHeight!: number;
 
   selectionValue: Date | null = null
   hoveringValue: Date | null = null
@@ -64,12 +79,12 @@ export default class Calendar extends Vue {
       if (this.selectionValue < this.hoveringValue) {
         return {
           startDate: this.selectionValue,
-          endDate: this.hoveringValue
+          endDate: this.hoveringValue,
         }
       } else {
         return {
           startDate: this.hoveringValue,
-          endDate: this.selectionValue
+          endDate: this.selectionValue,
         }
       }
     }
@@ -115,8 +130,6 @@ export default class Calendar extends Vue {
     let month = this.month
     let year = this.year
 
-    console.log('addMonths: ', months)
-
     if (months < 0) {
       month += months
       while (month < 0) {
@@ -135,6 +148,51 @@ export default class Calendar extends Vue {
     this.$emit('update:month', month)
     this.$emit('update:year', year)
   }
+
+  get datePresets () {
+    const entries: { name: string; value: Date | DateRange; id: string }[] = []
+    if (this.presets) {
+      Object.keys(this.presets).forEach(key => entries.push({
+        name: this.presets![key].title,
+        value: this.presets![key].value(),
+        id: key,
+      }))
+    } else {
+      Object.keys(defaults.presets[this.type]).forEach(key => entries.push({
+        name: defaults.presets[this.type][key].title,
+        value: defaults.presets[this.type][key].value(),
+        id: key,
+      }))
+    }
+    return entries
+  }
+
+  selectValue (value: Date | DateRange) {
+    this.$emit('input', value)
+
+    switch (this.type) {
+      case 'single':
+        this.$emit('update:month', (value as Date).getMonth())
+        this.$emit('update:year', (value as Date).getFullYear())
+        break
+      case 'range':
+        this.$emit('update:month', (value as DateRange).startDate.getMonth())
+        this.$emit('update:year', (value as DateRange).startDate.getFullYear())
+        break
+    }
+  }
+
+  isPresetSelected (value: Date | DateRange) {
+    if (this.value === null) return false
+    if (this.type === 'single') {
+      return isSameDay((value as Date), this.value as Date)
+    }
+    if (this.type === 'range') {
+      const range = this.value as DateRange
+      return isSameDay((value as DateRange).startDate, range.startDate) && isSameDay((value as DateRange).endDate, range.endDate)
+    }
+    return false
+  }
 }
 
 </script>
@@ -144,17 +202,39 @@ export default class Calendar extends Vue {
 $primary: #0aa699;
 
 .calendar {
-  width: 100%;
   height: 100%;
   display: flex;
+  align-items: stretch;
 
   .calendar-side-pane {
+
+    display: block;
+
+    &:first-child {
+      border-right: 1px solid #ccc;
+    }
+
     > ul {
       list-style: none;
       padding-left: 0;
+      width: 160px;
 
       > li {
         text-align: left;
+        padding: 0.3em 0.65em;
+        cursor: pointer;
+        user-select: none;
+        color: #333333;
+
+        &.active {
+          background-color: $primary;
+          color: white;
+          font-weight: bold;
+        }
+
+        &:hover:not(.active) {
+          background-color: rgba(0, 0, 0, 0.1);
+        }
       }
     }
   }
@@ -191,13 +271,32 @@ $primary: #0aa699;
   }
 
   .calendar-body {
-    width: 100%;
     height: 100%;
     display: flex;
+    padding: 10px;
     flex-direction: column;
   }
+
   .date-picker-input {
     width: 100%;
+  }
+
+  @media screen and (max-width: 500px) {
+    flex-direction: column;
+
+    .calendar-side-pane {
+      width: 100%;
+      border-right: none !important;
+      border-bottom: 1px solid #ccc;
+
+      ul {
+        width: unset;
+        margin: 0;
+
+        li {
+        }
+      }
+    }
   }
 }
 

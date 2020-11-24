@@ -1,6 +1,6 @@
 import { DateRange, PluginOptions } from '@/lib'
-import { enUS } from 'date-fns/locale'
 import { addDays, addMonths, endOfMonth, startOfMonth } from 'date-fns'
+import { enUS } from 'date-fns/locale'
 
 interface Defaults {
   locale: Locale;
@@ -10,17 +10,23 @@ interface Defaults {
   discardClass: string | string[];
   presets: {
     range: {
-      title: string;
-      value: (() => DateRange);
-    }[];
+      [key: string]: {
+        title: string;
+        value: (() => DateRange);
+      };
+    };
     single: {
-      title: string;
-      value: (() => Date);
-    }[];
+      [key: string]: {
+        title: string;
+        value: (() => Date);
+      };
+    };
     multi: {
-      title: string;
-      value: (() => Date);
-    }[];
+      [key: string]: {
+        title: string;
+        value: (() => Date);
+      };
+    };
   };
 }
 
@@ -31,34 +37,43 @@ const defaults: Defaults = {
   okClass: 'ok-button',
   discardClass: 'discardClass',
   presets: {
-    range: [
-      {
+    range: {
+      today: {
         title: 'Today',
         value: () => ({ startDate: new Date(), endDate: new Date() }),
       },
-      {
+      yesterday: {
         title: 'Yesterday',
         value: () => ({ startDate: addDays(new Date(), -1), endDate: addDays(new Date(), -1) }),
       },
-      {
+      currentMonth: {
         title: 'Current Month',
         value: () => ({ startDate: startOfMonth(new Date()), endDate: endOfMonth(new Date()) }),
       },
-      {
+      lastMonth: {
         title: 'Last Month',
         value: () => ({
           startDate: startOfMonth(addMonths(new Date(), -1)),
           endDate: endOfMonth(addMonths(new Date(), -1)),
         }),
       },
-    ],
-    single: [],
-    multi: [],
+    },
+    single: {},
+    multi: {},
   },
 }
 
 export function setupDefaults (opts?: PluginOptions) {
   if (opts?.locale) defaults.locale = opts.locale
+  if (opts?.okText) defaults.okText = opts.okText
+  if (opts?.discardText) defaults.discardText = opts.discardText
+  if (opts?.okClass) defaults.okClass = opts.okClass
+  if (opts?.discardClass) defaults.discardClass = opts.discardClass
+  if (opts?.presets) {
+    if (opts.presets.single) defaults.presets.single = opts.presets.single
+    if (opts.presets.multi) defaults.presets.multi = opts.presets.multi
+    if (opts.presets.range) defaults.presets.range = opts.presets.range
+  }
 
   return defaults
 }

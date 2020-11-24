@@ -7,27 +7,28 @@
     </div>
 
     <div class="calendar-popover" v-show="popoverShowing" ref="popover">
-      <calendar :type="type" :value="localValue" :month.sync="month" :year.sync="year" @input="localValue = $event">
+      <calendar :calendar-width="calendarWidth" :calendar-height="calendarHeight" :type="type" :value="localValue" :month.sync="month" :year.sync="year" @input="localValue = $event">
 
         <template v-for="(_, name) of $scopedSlots" v-slot:[name]="scope">
           <slot :name="name" v-bind="scope"></slot>
         </template>
-
+        <template #actions>
+          <div class="actions-row">
+            <slot :submit="submit" :discard="discard">
+              <button :class="okClass" @click="submit">
+                <slot name="ok-button-text">
+                  Ok
+                </slot>
+              </button>
+              <button :class="discardClass" @click="discard">
+                <slot name="discard-button-text">
+                  Cancel
+                </slot>
+              </button>
+            </slot>
+          </div>
+        </template>
       </calendar>
-      <div class="actions-row">
-        <slot :submit="submit" :discard="discard">
-          <button :class="okClass" @click="submit">
-            <slot name="ok-button-text">
-              Ok
-            </slot>
-          </button>
-          <button :class="discardClass" @click="discard">
-            <slot name="discard-button-text">
-              Cancel
-            </slot>
-          </button>
-        </slot>
-      </div>
     </div>
   </div>
 </template>
@@ -55,6 +56,8 @@ export default class DatePicker extends Vue {
 
   @Prop({ default: 'ok-button' }) okClass!: string;
   @Prop({ default: 'discard-button' }) discardClass!: string;
+  @Prop({ default: 256 }) calendarWidth!: number;
+  @Prop({ default: 256 }) calendarHeight!: number;
 
   localValue: Date | Date[] | DateRange | null = null
 
@@ -111,6 +114,7 @@ export default class DatePicker extends Vue {
     this.closeTimeout = setTimeout(() => {
       this.closeTimeout = null
       this.popoverShowing = false
+      this.localValue = this.value
     }, 50)
   }
 
@@ -243,11 +247,10 @@ $danger: #f35958;
 
 .calendar-popover {
   background-color: white;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.16);
   border-radius: 4px;
-  padding: 5px;
-  width: 256px;
-  height: 270px;
+
+  width: auto;
   display: flex;
   flex-direction: column;
 

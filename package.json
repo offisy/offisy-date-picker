@@ -6,6 +6,10 @@
   "license": "MIT",
   "unpkg": "dist/offisy-date-picker.umd.min.js",
   "jsdelivr": "dist/offisy-date-picker.umd.min.js",
+  "author": {
+    "name": "Marvin Schürz",
+    "email": "marvin.schuerz@offisy.at"
+  },
   "files": [
     "dist/**",
     "src/**"
@@ -17,10 +21,13 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build --target lib --name offisy-date-picker src/lib.ts",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "prepublishOnly": "$npm_execpath run build"
   },
   "dependencies": {
     "core-js": "^3.6.5",
+    "date-fns": "^2.16.1",
+    "@popperjs/core": "^2.5.4",
     "vue-class-component": "^7.2.3",
     "vue-property-decorator": "^8.4.2"
   },
@@ -45,8 +52,6 @@
     "vue-template-compiler": "^2.6.11"
   },
   "peerDependencies": {
-    "vue": "^2.6.11",
-    "date-fns": "^2.16.1",
-    "@popperjs/core": "^2.5.4"
+    "vue": "^2.6.11"
   }
 }

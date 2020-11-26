@@ -265,6 +265,7 @@ $primary: #0aa699;
     }
 
     .calendar-prev-icon::after {
+      font-size: 18px;
       border-style: solid;
       border-width: 0.25em 0.25em 0 0;
       content: '';
@@ -278,6 +279,7 @@ $primary: #0aa699;
       transform: rotate(-135deg);
     }
     .calendar-next-icon::after {
+      font-size: 18px;
       border-style: solid;
       border-width: 0.25em 0.25em 0 0;
       content: '';

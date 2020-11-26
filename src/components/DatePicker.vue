@@ -110,7 +110,9 @@ export default class DatePicker extends Vue {
     this.month = date.getMonth()
     this.year = date.getFullYear()
     this.popoverShowing = true
-    this.popper.forceUpdate()
+    this.$nextTick(() => {
+      this.popper.forceUpdate()
+    })
   }
 
   closeModal () {

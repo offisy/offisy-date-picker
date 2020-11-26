@@ -64,7 +64,7 @@ export default class DatePicker extends Vue {
 
   @Ref() input!: HTMLElement;
   @Ref() popover!: HTMLElement;
-  private popper: Instance;
+  private popper!: Instance;
 
   mounted () {
     this.localValue = this.value

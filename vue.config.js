@@ -10,7 +10,6 @@ module.exports = {
     }
   },
   chainWebpack: config => {
-
     config.module.rule('ts').uses.delete('thread-loader')
 
     if (process.env.NODE_ENV === 'production') {

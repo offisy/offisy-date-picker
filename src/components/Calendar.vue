@@ -14,31 +14,32 @@
         <slot name="header" :addMonths="addMonths" :year="year" :month="month" :formattedMonth="formattedMonth">
           <button class="calendar-prev-button" @click="addMonths(-1)">
             <slot name="prev-button-text">
-              &lt;
+              <div class="calendar-prev-icon">
+              </div>
             </slot>
           </button>
-
           <h4 class="calendar-header-title">
             {{ formattedMonth }} {{ year }}
           </h4>
 
           <button class="calendar-next-button" @click="addMonths(1)">
             <slot name="next-button-text">
-              &gt;
+              <div class="calendar-next-icon">
+            </div>
             </slot>
           </button>
         </slot>
       </div>
 
       <calendar-pane
-        :month="month"
-        :year="year"
-        :type="type"
-        :value="value"
-        :locale="locale"
-        :preview-range="selectionRange"
-        @day-clicked="onDayClicked"
-        @day-hovered="hoveringValue = $event"
+          :month="month"
+          :year="year"
+          :type="type"
+          :value="value"
+          :locale="locale"
+          :preview-range="selectionRange"
+          @day-clicked="onDayClicked"
+          @day-hovered="hoveringValue = $event"
       />
       <slot name="actions"/>
     </div>
@@ -252,7 +253,6 @@ $primary: #0aa699;
       background: none;
       cursor: pointer;
       border-radius: 4px;
-      color: #333;
       font-weight: bold;
 
       &:hover {
@@ -262,6 +262,33 @@ $primary: #0aa699;
       &:focus {
         outline: none
       }
+    }
+
+    .calendar-prev-icon::after {
+      border-style: solid;
+      border-width: 0.25em 0.25em 0 0;
+      content: '';
+      display: inline-block;
+      height: 0.45em;
+      position: relative;
+      top: 0.15em;
+      vertical-align: top;
+      width: 0.45em;
+      left: 0.25em;
+      transform: rotate(-135deg);
+    }
+    .calendar-next-icon::after {
+      border-style: solid;
+      border-width: 0.25em 0.25em 0 0;
+      content: '';
+      display: inline-block;
+      height: 0.45em;
+      position: relative;
+      top: 0.15em;
+      vertical-align: top;
+      width: 0.45em;
+      left: 0.0em;
+      transform: rotate(45deg);
     }
 
     .calendar-header-title {

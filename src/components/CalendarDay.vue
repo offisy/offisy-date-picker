@@ -23,8 +23,8 @@ import { getDate } from 'date-fns'
   filters: {
     dayOfMonth (date: Date) {
       return getDate(date)
-    }
-  }
+    },
+  },
 })
 export default class CalendarDay extends Vue {
   @Prop({ required: true, type: Date }) date!: Date;

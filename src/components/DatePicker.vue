@@ -84,12 +84,12 @@ export default class DatePicker extends Vue {
   month = 0
   year = 0
   popoverShowing = false
-  closeTimeout: number | null = null
+  closeTimeout: number | NodeJS.Timeout | null = null
 
   openModal () {
     let date = new Date()
     if (this.closeTimeout) {
-      clearTimeout(this.closeTimeout)
+      clearTimeout(this.closeTimeout as NodeJS.Timeout)
       this.closeTimeout = null
     }
     switch (this.type) {

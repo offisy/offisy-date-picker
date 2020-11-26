@@ -13,5 +13,5 @@ export const ClickOutside = {
   },
   unbind: function (el: any) {
     document.body.removeEventListener('click', el.clickOutsideEvent)
-  }
+  },
 }

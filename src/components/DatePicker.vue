@@ -254,6 +254,8 @@ $danger: #f35958;
   display: flex;
   flex-direction: column;
 
+  z-index: 100;
+  
   .actions-row {
     display: flex;
     justify-content: flex-end;

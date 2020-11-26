@@ -23,7 +23,8 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build --target lib --name offisy-date-picker src/lib.ts",
     "lint": "vue-cli-service lint",
-    "prepublishOnly": "$npm_execpath run build"
+    "prepublishOnly": "$npm_execpath run build",
+    "build:demo": "vue-cli-service build"
   },
   "dependencies": {
     "core-js": "^3.6.5",

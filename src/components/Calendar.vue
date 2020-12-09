@@ -296,6 +296,7 @@ $primary: #0aa699;
     .calendar-header-title {
       flex-grow: 1;
       width: 100%;
+      text-align: center;
     }
   }
 

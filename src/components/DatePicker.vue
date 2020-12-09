@@ -1,10 +1,19 @@
 <template>
   <div class="date-picker" v-click-outside="closeModal">
     <div class="date-picker-input" ref="input">
-      <slot :value="textValue" :onInput="textInputListener" :open="openModalHandler">
+      <template v-if="!dualInputs">
+        <slot v-bind:value="textValue" v-bind:onInput="textInputListener" v-bind:open="openModalHandler" v-bind:onChange="changeListener">
+          <input type="text" v-model="textValue" @change="onTextInput" @focus="openModal">
+        </slot>
+      </template>
+      <template v-else>
+        <slot name="start-date">
 
-        <input type="text" v-model="textValue" @change="onTextInput" @focus="openModal">
-      </slot>
+        </slot>
+        <slot name="end-date">
+
+        </slot>
+      </template>
     </div>
 
     <div class="calendar-popover" v-show="popoverShowing" ref="popover">
@@ -60,6 +69,7 @@ export default class DatePicker extends Vue {
   @Prop({ default: 'discard-button' }) discardClass!: string;
   @Prop({ default: 256 }) calendarWidth!: number;
   @Prop({ default: 256 }) calendarHeight!: number;
+  @Prop({ type: Boolean }) dualInputs!: boolean;
 
   localValue: Date | Date[] | DateRange | null = null
 
@@ -150,6 +160,13 @@ export default class DatePicker extends Vue {
   }
 
   get textInputListener () {
+    // eslint-disable-next-line no-return-assign
+    return (value: string) => {
+      this.textValue = value
+    }
+  }
+
+  get changeListener () {
     return this.onTextInput
   }
 

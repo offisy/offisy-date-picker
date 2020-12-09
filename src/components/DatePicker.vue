@@ -8,7 +8,8 @@
     </div>
 
     <div class="calendar-popover" v-show="popoverShowing" ref="popover">
-      <calendar :calendar-width="calendarWidth" :calendar-height="calendarHeight" :type="type" :value="localValue" :month.sync="month" :year.sync="year" @input="localValue = $event">
+      <calendar :calendar-width="calendarWidth" :calendar-height="calendarHeight" :type="type" :value="localValue"
+                :month.sync="month" :year.sync="year" @input="localValue = $event">
 
         <template v-for="(_, name) of $scopedSlots" v-slot:[name]="scope">
           <slot :name="name" v-bind="scope"></slot>
@@ -40,7 +41,7 @@ import { Component, Prop, Ref, Vue, Watch } from 'vue-property-decorator'
 import { CalendarType, DateRange } from '@/lib'
 import { format, parse } from 'date-fns'
 import Calendar from '@/components/Calendar.vue'
-import { createPopper } from '@popperjs/core'
+import { createPopper, Instance } from '@popperjs/core'
 import { ClickOutside } from '@/directives/ClickOutside'
 
 @Component({
@@ -64,13 +65,14 @@ export default class DatePicker extends Vue {
 
   @Ref() input!: HTMLElement;
   @Ref() popover!: HTMLElement;
+  private popper!: Instance;
 
   mounted () {
     this.localValue = this.value
     this.formatValue()
 
     this.$nextTick(() => {
-      createPopper(this.input, this.popover, {
+      this.popper = createPopper(this.input, this.popover, {
         placement: 'bottom-start',
       })
     })
@@ -114,6 +116,9 @@ export default class DatePicker extends Vue {
     this.month = date.getMonth()
     this.year = date.getFullYear()
     this.popoverShowing = true
+    this.$nextTick(() => {
+      this.popper.forceUpdate()
+    })
   }
 
   closeModal () {
@@ -121,6 +126,7 @@ export default class DatePicker extends Vue {
       this.closeTimeout = null
       this.popoverShowing = false
       this.localValue = this.value
+      this.popper.forceUpdate()
     }, 50)
   }
 
@@ -246,6 +252,10 @@ export default class DatePicker extends Vue {
     this.localValue = this.value
     this.closeModal()
   }
+
+  beforeDestroy () {
+    this.popper.destroy()
+  }
 }
 
 </script>
@@ -263,6 +273,8 @@ $danger: #f35958;
   width: auto;
   display: flex;
   flex-direction: column;
+
+  z-index: 100;
 
   .actions-row {
     display: flex;

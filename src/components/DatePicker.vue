@@ -1,7 +1,8 @@
 <template>
   <div class="date-picker" v-click-outside="closeModal">
     <div class="date-picker-input" ref="input">
-      <slot :onInput="onTextInput" :open="openModal" :close="closeModal" :value="textValue">
+      <slot :value="textValue" :onInput="textInputListener" :open="openModalHandler">
+
         <input type="text" v-model="textValue" @change="onTextInput" @focus="openModal">
       </slot>
     </div>
@@ -14,7 +15,7 @@
         </template>
         <template #actions>
           <div class="actions-row">
-            <slot :submit="submit" :discard="discard">
+            <slot name="actions-row" :submit="submit" :discard="discard">
               <button :class="okClass" @click="submit">
                 <slot name="ok-button-text">
                   Ok
@@ -86,6 +87,11 @@ export default class DatePicker extends Vue {
   popoverShowing = false
   closeTimeout: number | NodeJS.Timeout | null = null
 
+  get openModalHandler () {
+    console.log(this.openModal)
+    return this.openModal
+  }
+
   openModal () {
     let date = new Date()
     if (this.closeTimeout) {
@@ -135,6 +141,10 @@ export default class DatePicker extends Vue {
         const range = this.value as DateRange
         this.textValue = `${format(range.startDate, 'dd.MM.yyyy')} - ${format(range.endDate, 'dd.MM.yyyy')}`
     }
+  }
+
+  get textInputListener () {
+    return this.onTextInput
   }
 
   onTextInput () {

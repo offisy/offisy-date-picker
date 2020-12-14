@@ -19,9 +19,13 @@
             </slot>
           </button>
           <h4 class="calendar-header-title">
-            {{ formattedMonth }} {{ year }}
+            <select :value="month" @input="$emit('update:month', parseInt($event.target.value))">
+              <option v-for="month in months" :value="month" :key="month">
+                {{ month | monthName(locale) }}
+              </option>
+            </select>
+            <input v-model="yearText" @change="$emit('update:year', parseInt(yearText))" type="number">
           </h4>
-
           <button class="calendar-next-button" @click="addMonths(1)">
             <slot name="next-button-text">
               <div class="calendar-next-icon">
@@ -51,12 +55,17 @@ import CalendarPane from '@/components/CalendarPane.vue'
 import CalendarTransition from '@/components/CalendarTransition.vue'
 import { CalendarType, DateRange } from '@/lib.ts'
 import defaults from '@/util/defaults'
-import { start } from '@popperjs/core'
-import { format, isSameDay } from 'date-fns'
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { format, isSameDay, setMonth } from 'date-fns'
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 
 @Component({
   components: { CalendarTransition, CalendarPane },
+  filters: {
+    monthName (month: number, locale: Locale) {
+      const date = setMonth(new Date(), month)
+      return format(date, 'MMMM', { locale })
+    },
+  },
 })
 export default class Calendar extends Vue {
   @Prop({ required: true }) type!: CalendarType;
@@ -74,6 +83,17 @@ export default class Calendar extends Vue {
   selectionValue: Date | null = null
   hoveringValue: Date | null = null
   mode: 'selecting' | null = null
+
+  yearText = ''
+
+  @Watch('year')
+  updateYearText () {
+    this.yearText = this.year.toString()
+  }
+
+  mounted () {
+    this.updateYearText()
+  }
 
   get selectionRange (): DateRange | null {
     if (this.mode === 'selecting' && this.selectionValue && this.hoveringValue) {
@@ -194,6 +214,10 @@ export default class Calendar extends Vue {
     }
     return false
   }
+
+  get months () {
+    return Array.from(new Array(12).keys())
+  }
 }
 
 </script>
@@ -297,6 +321,27 @@ $primary: #0aa699;
       flex-grow: 1;
       width: 100%;
       text-align: center;
+      display: flex;
+      height: 2em;
+      > * {
+        flex-basis: 50%;
+        flex-shrink: 1;
+        flex-grow: 1;
+        width: 50%;
+        height: auto;
+        border: none;
+
+        &:focus {
+          outline: 1px solid #ccc;
+        }
+
+        &input {
+          padding: 5px 0;
+        }
+        &:first-child {
+          margin-right: 5px;
+        }
+      }
     }
   }
 

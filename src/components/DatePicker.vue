@@ -1,31 +1,31 @@
 <template>
-  <div class="date-picker" v-click-outside="closeModal">
-    <div class="date-picker-input" ref="input">
+  <div v-click-outside="closeModal" class="date-picker">
+    <div ref="input" class="date-picker-input">
       <template v-if="!dualInputs">
-        <slot v-bind:value="textValue" v-bind:onInput="textInputListener" v-bind:open="openModalHandler" v-bind:onChange="changeListener">
-          <input type="text" v-model="textValue" @change="onTextInput" @focus="openModal">
+        <slot v-bind:onChange="changeListener" v-bind:onInput="textInputListener" v-bind:open="openModalHandler"
+              v-bind:value="textValue">
+          <input v-model="textValue" type="text" @change="onTextInput" @focus="openModal">
         </slot>
       </template>
       <template v-else>
-        <slot name="start-date">
-
-        </slot>
-        <slot name="end-date">
-
+        <slot v-bind:onChange="changeListener" v-bind:open="openModalHandler" v-bind:value="textValue">
+          <input v-model="textValue[0]" type="text" @change="onTextInput" @focus="openModal"/>
+          &ndash;
+          <input v-model="textValue[1]" @change="onTextInput" @focus="openModal"/>
         </slot>
       </template>
     </div>
 
-    <div class="calendar-popover" v-show="popoverShowing" ref="popover">
-      <calendar :calendar-width="calendarWidth" :calendar-height="calendarHeight" :type="type" :value="localValue"
-                :month.sync="month" :year.sync="year" @input="localValue = $event">
+    <div v-show="popoverShowing" ref="popover" class="calendar-popover">
+      <calendar :calendar-height="calendarHeight" :calendar-width="calendarWidth" :month.sync="month" :type="type"
+                :value="localValue" :year.sync="year" @input="localValue = $event">
 
         <template v-for="(_, name) of $scopedSlots" v-slot:[name]="scope">
-          <slot :name="name" v-bind="scope"></slot>
+          <slot v-bind="scope" :name="name"></slot>
         </template>
         <template #actions>
           <div class="actions-row">
-            <slot name="actions-row" :submit="submit" :discard="discard">
+            <slot :discard="discard" :submit="submit" name="actions-row">
               <button :class="okClass" @click="submit">
                 <slot name="ok-button-text">
                   Ok
@@ -60,7 +60,7 @@ import { ClickOutside } from '@/directives/ClickOutside'
   },
 })
 export default class DatePicker extends Vue {
-  textValue = ''
+  textValue: string | string[] = ''
 
   @Prop() value!: Date | Date[] | DateRange | null;
   @Prop({ required: true, default: 'single' }) type!: CalendarType;
@@ -75,7 +75,27 @@ export default class DatePicker extends Vue {
 
   @Ref() input!: HTMLElement;
   @Ref() popover!: HTMLElement;
+  month = 0
+  year = 0
+  popoverShowing = false
+  closeTimeout: number | NodeJS.Timeout | null = null
   private popper!: Instance;
+
+  get openModalHandler () {
+    console.log(this.openModal)
+    return this.openModal
+  }
+
+  get textInputListener () {
+    // eslint-disable-next-line no-return-assign
+    return (value: string) => {
+      this.textValue = value
+    }
+  }
+
+  get changeListener () {
+    return this.onTextInput
+  }
 
   mounted () {
     this.localValue = this.value
@@ -92,16 +112,6 @@ export default class DatePicker extends Vue {
   onValueChanged () {
     this.localValue = this.value
     this.formatValue()
-  }
-
-  month = 0
-  year = 0
-  popoverShowing = false
-  closeTimeout: number | NodeJS.Timeout | null = null
-
-  get openModalHandler () {
-    console.log(this.openModal)
-    return this.openModal
   }
 
   openModal () {
@@ -142,7 +152,8 @@ export default class DatePicker extends Vue {
 
   formatValue () {
     if (!this.value) {
-      this.textValue = ''
+      if (this.type === 'range' && this.dualInputs) this.textValue = ['', '']
+      else this.textValue = ''
       return
     }
     switch (this.type) {
@@ -155,23 +166,18 @@ export default class DatePicker extends Vue {
       case 'range':
         // eslint-disable-next-line no-case-declarations
         const range = this.value as DateRange
-        this.textValue = `${format(range.startDate, 'dd.MM.yyyy')} - ${format(range.endDate, 'dd.MM.yyyy')}`
+        if (this.dualInputs) {
+          this.textValue = [format(range.startDate, 'dd.MM.yyyy'), format(range.endDate, 'dd.MM.yyyy')]
+        } else {
+          this.textValue = `${format(range.startDate, 'dd.MM.yyyy')} - ${format(range.endDate, 'dd.MM.yyyy')}`
+        }
     }
-  }
-
-  get textInputListener () {
-    // eslint-disable-next-line no-return-assign
-    return (value: string) => {
-      this.textValue = value
-    }
-  }
-
-  get changeListener () {
-    return this.onTextInput
   }
 
   onTextInput () {
-    const value = this.textValue
+    let value = this.textValue
+    if (Array.isArray(value)) value = value.join(' - ')
+
     if (value.trim().length === 0) {
       this.$emit('input', null)
       return
@@ -200,20 +206,24 @@ export default class DatePicker extends Vue {
 
         startDate = parse(parts[0].trim(), 'dd.MM.yyyy', new Date())
         if (isNaN(startDate.getTime())) startDate = parse(parts[0].trim(), 'ddMMyyyy', new Date())
-        if (isNaN(startDate.getTime())) {
-          this.textValue = ''
-          return
-        }
-
         endDate = parse(parts[1].trim(), 'dd.MM.yyyy', new Date())
+
         if (isNaN(endDate.getTime())) endDate = parse(parts[1].trim(), 'ddMMyyyy', new Date())
+        if (isNaN(startDate.getTime())) {
+          startDate = endDate
+        }
         if (isNaN(endDate.getTime())) {
-          this.textValue = ''
-          return
+          endDate = startDate
         }
 
         if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
           this.formatValue()
+        }
+
+        if (startDate > endDate) {
+          const tmp = startDate
+          startDate = endDate
+          endDate = tmp
         }
 
         this.$emit('input', { startDate, endDate })

@@ -19,7 +19,7 @@
             </slot>
           </button>
           <h4 class="calendar-header-title">
-            <select :value="month" @input="$emit('update:month', parseInt($event.target.value))">
+            <select class="calendar-month-select" :value="month" @input="$emit('update:month', parseInt($event.target.value))">
               <option v-for="month in months" :value="month" :key="month">
                 {{ month | monthName(locale) }}
               </option>
@@ -42,6 +42,8 @@
           :value="value"
           :locale="locale"
           :preview-range="selectionRange"
+          :max="max"
+          :min="min"
           @day-clicked="onDayClicked"
           @day-hovered="hoveringValue = $event"
       />
@@ -61,6 +63,7 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 @Component({
   components: { CalendarTransition, CalendarPane },
   filters: {
+
     monthName (month: number, locale: Locale) {
       const date = setMonth(new Date(), month)
       return format(date, 'MMMM', { locale })
@@ -79,6 +82,9 @@ export default class Calendar extends Vue {
 
   @Prop({ default: 256 }) calendarWidth!: number;
   @Prop({ default: 256 }) calendarHeight!: number;
+
+  @Prop({ type: Date }) min?: Date;
+  @Prop({ type: Date }) max?: Date;
 
   selectionValue: Date | null = null
   hoveringValue: Date | null = null
@@ -373,6 +379,10 @@ $primary: #0aa699;
       }
     }
   }
+}
+
+.calendar-month-select {
+  background-color: white;
 }
 
 </style>

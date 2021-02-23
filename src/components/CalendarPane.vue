@@ -1,15 +1,17 @@
 <template>
   <div class="calendar-pane">
     <div class="days-wrapper">
-      <div class="weekday-name" v-for="day in [0,1,2,3,4,5,6]" :key="'weekday-' + day">
+      <div v-for="day in [0,1,2,3,4,5,6]" :key="'weekday-' + day" class="weekday-name">
         {{ weekDayName(days[day]) }}
       </div>
       <calendar-day v-for="(day, index) in days" :key="index"
                     :date="day"
+                    :disabled="isDisabled(day)"
                     :display-type="getDisplayType(day)"
                     :outside-range="isOutsideMonth(day)"
                     @click="$emit('day-clicked', day, $event)"
-                    @mouseenter="$emit('day-hovered', day)"/>
+                    @mouseenter="$emit('day-hovered', day)"
+      />
     </div>
   </div>
 </template>
@@ -18,13 +20,16 @@
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import {
   addDays,
-  getWeeksInMonth, isSameDay,
+  format,
+  getMonth,
+  getWeeksInMonth,
+  isSameDay,
+  isWithinInterval,
+  startOfDay,
   startOfWeek,
-  isWithinInterval, getMonth, format,
 } from 'date-fns'
 import CalendarDay from '@/components/CalendarDay.vue'
 import { CalendarType, DateRange } from '@/lib'
-import { de } from 'date-fns/locale'
 
 @Component({
   components: { CalendarDay },
@@ -36,6 +41,9 @@ export default class CalendarPane extends Vue {
   @Prop({ required: true }) type!: CalendarType;
   @Prop() previewRange!: DateRange | null;
   @Prop({}) locale!: Locale;
+
+  @Prop({ type: Date }) min?: Date;
+  @Prop({ type: Date }) max?: Date;
 
   @Prop() value!: Date | Date[] | DateRange | null
 
@@ -101,6 +109,16 @@ export default class CalendarPane extends Vue {
 
   weekDayName (date: Date) {
     return format(date, 'EEEEEE', { locale: this.locale })
+  }
+
+  isDisabled (day: Date) {
+    day = startOfDay(day)
+    if (this.min && day < startOfDay(this.min)) {
+      return true
+    } else if (this.max && day > startOfDay(this.max)) {
+      return true
+    }
+    return false
   }
 }
 

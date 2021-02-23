@@ -17,21 +17,20 @@
     </div>
 
     <div v-show="popoverShowing" ref="popover" class="calendar-popover">
-      <calendar :calendar-height="calendarHeight" :calendar-width="calendarWidth" :month.sync="month" :type="type"
-                :value="localValue" :year.sync="year" @input="localValue = $event">
-
+      <calendar :calendar-height="calendarHeight" :calendar-width="calendarWidth" :max="max" :min="min"
+                :month.sync="month" :type="type" :value="localValue" :year.sync="year" @input="localValue = $event">
         <template v-for="(_, name) of $scopedSlots" v-slot:[name]="scope">
           <slot v-bind="scope" :name="name"></slot>
         </template>
         <template #actions>
           <div class="actions-row">
             <slot :discard="discard" :submit="submit" name="actions-row">
-              <button :class="okClass" @click="submit">
+              <button :class="okClass" type="button" @click="submit">
                 <slot name="ok-button-text">
                   Ok
                 </slot>
               </button>
-              <button :class="discardClass" @click="discard">
+              <button :class="discardClass" type="button" @click="discard">
                 <slot name="discard-button-text">
                   Cancel
                 </slot>
@@ -58,6 +57,9 @@ import { ClickOutside } from '@/directives/ClickOutside'
   directives: {
     'click-outside': ClickOutside,
   },
+  filters: {
+    date: format,
+  },
 })
 export default class DatePicker extends Vue {
   textValue: string | string[] = ''
@@ -70,6 +72,9 @@ export default class DatePicker extends Vue {
   @Prop({ default: 256 }) calendarWidth!: number;
   @Prop({ default: 256 }) calendarHeight!: number;
   @Prop({ type: Boolean }) dualInputs!: boolean;
+
+  @Prop({ type: Date }) min?: Date;
+  @Prop({ type: Date }) max?: Date;
 
   localValue: Date | Date[] | DateRange | null = null
 
@@ -100,7 +105,6 @@ export default class DatePicker extends Vue {
   mounted () {
     this.localValue = this.value
     this.formatValue()
-
     this.$nextTick(() => {
       this.popper = createPopper(this.input, this.popover, {
         placement: 'bottom-start',
@@ -282,6 +286,26 @@ export default class DatePicker extends Vue {
 
   beforeDestroy () {
     this.popper.destroy()
+  }
+
+  private clampValue (val: Date | Date[] | DateRange|null) {
+    if (val === null) return null
+    if (this.type === 'single') {
+      let value = val
+      if (this.min && value < this.min) value = this.min
+      if (this.max && value > this.max) value = this.max
+      return value
+    } else if (this.type === 'multi') {
+      return (val as Date[]).map(date => this.min && date < this.min ? this.min : (this.max && date > this.max ? this.max : date))
+    } else if (this.type === 'range') {
+      const value = { ...val as DateRange }
+      if (this.min && value.startDate < this.min) value.startDate = this.min
+      if (this.min && value.endDate < this.min) value.endDate = this.min
+      if (this.max && value.startDate > this.max) value.startDate = this.max
+      if (this.max && value.endDate > this.max) value.endDate = this.max
+      return value
+    }
+    return null
   }
 }
 

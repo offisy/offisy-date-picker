@@ -30,11 +30,13 @@ export default class CalendarDay extends Vue {
   @Prop({ required: true, type: Date }) date!: Date;
   @Prop() displayType!: 'selected' | null;
   @Prop({ type: Boolean }) outsideRange!: boolean;
+  @Prop({ type: Boolean }) disabled!: boolean;
 
   get classes () {
     const classes = []
     if (this.displayType) classes.push(this.displayType)
     if (this.outsideRange) classes.push('outside-range')
+    if (this.disabled) return ['outside-range', 'disabled']
 
     return classes
   }
@@ -66,6 +68,10 @@ $selected: rgba(10, 166, 153, 0.15);
 
   &.outside-range>.calendar-day-text {
     color: transparentize(#333333, 0.65);
+  }
+
+  &.disabled {
+    pointer-events: none;
   }
 
   &.selected, &.start, &.end {

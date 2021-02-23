@@ -2,7 +2,7 @@
   <div id="app">
     <div>
       <h3>Single</h3>
-      <offisy-date-picker type="single" v-model="single" >
+      <offisy-date-picker type="single" v-model="single"  :min="max">
       </offisy-date-picker>
 
       <h3>Multi</h3>
@@ -11,9 +11,10 @@
       <h3>Range</h3>
       <offisy-date-picker type="range" v-model="range"/>
       <br>
+      {{range}}
+      <br>
       <offisy-date-picker type="range" v-model="range" dual-inputs>
         <template #start-date="{}">
-
         </template>
         <template #end-date="{}">
 
@@ -27,12 +28,15 @@
 import { Component, Vue } from 'vue-property-decorator'
 
 import './lib'
+import { addDays } from 'date-fns'
 
 @Component
 export default class Demo extends Vue {
-  single = null
+  single = addDays(new Date(), -10)
   multi = null
   range = null
+
+  max = new Date()
 }
 
 </script>

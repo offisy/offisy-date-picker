@@ -112,7 +112,7 @@ export default class DatePicker extends Vue {
     })
   }
 
-  @Watch('value')
+  @Watch('value', { deep: true })
   onValueChanged () {
     this.localValue = this.value
     this.formatValue()

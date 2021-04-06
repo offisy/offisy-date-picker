@@ -19,7 +19,8 @@
             </slot>
           </button>
           <h4 class="calendar-header-title">
-            <select class="calendar-month-select" :value="month" @input="$emit('update:month', parseInt($event.target.value))">
+            <select class="calendar-month-select" :value="month"
+                    @input="$emit('update:month', parseInt($event.target.value))">
               <option v-for="month in months" :value="month" :key="month">
                 {{ month | monthName(locale) }}
               </option>
@@ -29,7 +30,7 @@
           <button class="calendar-next-button" @click="addMonths(1)">
             <slot name="next-button-text">
               <div class="calendar-next-icon">
-            </div>
+              </div>
             </slot>
           </button>
         </slot>
@@ -61,7 +62,10 @@ import { format, isSameDay, setMonth } from 'date-fns'
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 
 @Component({
-  components: { CalendarTransition, CalendarPane },
+  components: {
+    CalendarTransition,
+    CalendarPane,
+  },
   filters: {
 
     monthName (month: number, locale: Locale) {
@@ -71,20 +75,28 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
   },
 })
 export default class Calendar extends Vue {
-  @Prop({ required: true }) type!: CalendarType;
+  @Prop({ required: true }) type!: CalendarType
   @Prop() value!: Date | Date[] | DateRange | null
 
-  @Prop({ type: Number, required: true }) year!: number;
-  @Prop({ type: Number, required: true, validator: value => value >= 0 && value < 12 }) month!: number;
+  @Prop({
+    type: Number,
+    required: true,
+  }) year!: number
 
-  @Prop({ default: () => defaults.locale }) locale!: Locale;
-  @Prop() presets?: { [key: string]: { title: string; value: (() => (Date | DateRange)) } };
+  @Prop({
+    type: Number,
+    required: true,
+    validator: value => value >= 0 && value < 12,
+  }) month!: number
 
-  @Prop({ default: 256 }) calendarWidth!: number;
-  @Prop({ default: 256 }) calendarHeight!: number;
+  @Prop({ default: () => defaults.locale }) locale!: Locale
+  @Prop() presets?: { [key: string]: { title: string; value: (() => (Date | DateRange)) } }
 
-  @Prop({ type: Date }) min?: Date;
-  @Prop({ type: Date }) max?: Date;
+  @Prop({ default: 256 }) calendarWidth!: number
+  @Prop({ default: 256 }) calendarHeight!: number
+
+  @Prop({ type: Date }) min?: Date
+  @Prop({ type: Date }) max?: Date
 
   selectionValue: Date | null = null
   hoveringValue: Date | null = null
@@ -139,9 +151,15 @@ export default class Calendar extends Vue {
         const b = this.hoveringValue
         if (a && b) {
           if (a < b) {
-            this.$emit('input', { startDate: a, endDate: b })
+            this.$emit('input', {
+              startDate: a,
+              endDate: b,
+            })
           } else {
-            this.$emit('input', { startDate: b, endDate: a })
+            this.$emit('input', {
+              startDate: b,
+              endDate: a,
+            })
           }
         }
       }
@@ -229,8 +247,7 @@ export default class Calendar extends Vue {
 </script>
 
 <style lang="scss" scoped>
-
-$primary: #0aa699;
+@import '../style';
 
 .calendar {
   height: 100%;
@@ -238,21 +255,21 @@ $primary: #0aa699;
   align-items: stretch;
 
   .calendar-side-pane {
-
     display: block;
 
     &:first-child {
-      border-right: 1px solid #ccc;
+      border-right: 1px solid $calendar-side-pane-border-color;
     }
 
     > ul {
       list-style: none;
       padding-left: 0;
       width: 160px;
+      margin: 0;
 
       > li {
         text-align: left;
-        padding: 0.3em 0.65em;
+        padding: 0.5em 0.65em;
         cursor: pointer;
         user-select: none;
         color: #333333;
@@ -270,92 +287,96 @@ $primary: #0aa699;
     }
   }
 
-  .calendar-header {
-    display: flex;
-    align-items: center;
-
-    .calendar-prev-button, .calendar-next-button {
-      flex-grow: 0;
-      border: none;
-      width: 4em;
-      height: 3em;
-      display: block;
-      background: none;
-      cursor: pointer;
-      border-radius: 4px;
-      font-weight: bold;
-
-      &:hover {
-        background: rgba(0, 0, 0, 0.1);;
-      }
-
-      &:focus {
-        outline: none
-      }
-    }
-
-    .calendar-prev-icon::after {
-      font-size: 18px;
-      border-style: solid;
-      border-width: 0.25em 0.25em 0 0;
-      content: '';
-      display: inline-block;
-      height: 0.45em;
-      position: relative;
-      top: 0.15em;
-      vertical-align: top;
-      width: 0.45em;
-      left: 0.25em;
-      transform: rotate(-135deg);
-    }
-    .calendar-next-icon::after {
-      font-size: 18px;
-      border-style: solid;
-      border-width: 0.25em 0.25em 0 0;
-      content: '';
-      display: inline-block;
-      height: 0.45em;
-      position: relative;
-      top: 0.15em;
-      vertical-align: top;
-      width: 0.45em;
-      left: 0.0em;
-      transform: rotate(45deg);
-    }
-
-    .calendar-header-title {
-      flex-grow: 1;
-      width: 100%;
-      text-align: center;
-      display: flex;
-      height: 2em;
-      > * {
-        flex-basis: 50%;
-        flex-shrink: 1;
-        flex-grow: 1;
-        width: 50%;
-        height: auto;
-        border: none;
-
-        &:focus {
-          outline: 1px solid #ccc;
-        }
-
-        &input {
-          padding: 5px 0;
-        }
-        &:first-child {
-          margin-right: 5px;
-        }
-      }
-    }
-  }
-
   .calendar-body {
     height: 100%;
     display: flex;
-    padding: 10px;
+    padding: .25rem;
     flex-direction: column;
+
+    .calendar-header {
+      display: flex;
+      align-items: center;
+
+      .calendar-prev-button, .calendar-next-button {
+        flex-grow: 0;
+        border: none;
+        width: 4em;
+        height: 3em;
+        display: block;
+        background: none;
+        cursor: pointer;
+        border-radius: 4px;
+        font-weight: bold;
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.1);;
+        }
+
+        &:focus {
+          outline: none
+        }
+      }
+
+      .calendar-prev-icon::after {
+        font-size: 18px;
+        border-style: solid;
+        border-width: 0.25em 0.25em 0 0;
+        content: '';
+        display: inline-block;
+        height: 0.45em;
+        position: relative;
+        top: 0.15em;
+        vertical-align: top;
+        width: 0.45em;
+        left: 0.25em;
+        transform: rotate(-135deg);
+      }
+
+      .calendar-next-icon::after {
+        font-size: 18px;
+        border-style: solid;
+        border-width: 0.25em 0.25em 0 0;
+        content: '';
+        display: inline-block;
+        height: 0.45em;
+        position: relative;
+        top: 0.15em;
+        vertical-align: top;
+        width: 0.45em;
+        left: 0.0em;
+        transform: rotate(45deg);
+      }
+
+      .calendar-header-title {
+        flex-grow: 1;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        display: flex;
+        margin: 0;
+
+        input {
+          text-align: right;
+        }
+
+        > * {
+          flex-basis: 50%;
+          flex-shrink: 1;
+          flex-grow: 1;
+          width: 50%;
+          height: auto;
+          border: none;
+
+          &:focus {
+            outline: 1px solid #ccc;
+          }
+
+          &:first-child {
+            margin-right: 5px;
+          }
+        }
+      }
+    }
   }
 
   .date-picker-input {

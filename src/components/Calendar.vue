@@ -264,7 +264,7 @@ export default class Calendar extends Vue {
     > ul {
       list-style: none;
       padding-left: 0;
-      width: 160px;
+      width: 10em;
       margin: 0;
 
       > li {
@@ -272,16 +272,16 @@ export default class Calendar extends Vue {
         padding: 0.5em 0.65em;
         cursor: pointer;
         user-select: none;
-        color: #333333;
+        color: $black;
+        transition: all 0.35s ease;
 
         &.active {
           background-color: $primary;
           color: white;
-          font-weight: bold;
         }
 
         &:hover:not(.active) {
-          background-color: rgba(0, 0, 0, 0.1);
+          background-color: $secondary-0-15;
         }
       }
     }
@@ -394,9 +394,6 @@ export default class Calendar extends Vue {
       ul {
         width: unset;
         margin: 0;
-
-        li {
-        }
       }
     }
   }

@@ -1,6 +1,6 @@
 {
   "name": "offisy-date-picker",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "private": false,
   "main": "dist/offisy-date-picker.umd.min.js",
   "types": "dist/lib.d.ts",

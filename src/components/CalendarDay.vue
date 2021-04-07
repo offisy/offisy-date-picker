@@ -45,9 +45,7 @@ export default class CalendarDay extends Vue {
 </script>
 
 <style lang="scss" scoped>
-
-$primary: #0aa699;
-$selected: rgba(10, 166, 153, 0.15);
+@import '../style';
 
 .calendar-day {
   width: 100%;
@@ -89,10 +87,11 @@ $selected: rgba(10, 166, 153, 0.15);
     width: 100%;
     height: 100%;
     border-radius: 5px;
+    transition: all 0.35s ease;
   }
 
   &.between>.calendar-day-backdrop {
-    background-color: $selected;
+    background-color: $secondary-0-15;
     border-radius: 0;
   }
 

@@ -301,7 +301,7 @@ export default class Calendar extends Vue {
         flex-grow: 0;
         border: none;
         width: 4em;
-        height: 3em;
+        height: 2.5em;
         display: block;
         background: none;
         cursor: pointer;
@@ -323,11 +323,11 @@ export default class Calendar extends Vue {
         border-width: 0.25em 0.25em 0 0;
         content: '';
         display: inline-block;
-        height: 0.45em;
+        height: 0.25em;
         position: relative;
         top: 0.15em;
         vertical-align: top;
-        width: 0.45em;
+        width: 0.25em;
         left: 0.25em;
         transform: rotate(-135deg);
       }
@@ -338,11 +338,11 @@ export default class Calendar extends Vue {
         border-width: 0.25em 0.25em 0 0;
         content: '';
         display: inline-block;
-        height: 0.45em;
+        height: 0.25em;
         position: relative;
         top: 0.15em;
         vertical-align: top;
-        width: 0.45em;
+        width: 0.25em;
         left: 0.0em;
         transform: rotate(45deg);
       }
@@ -357,15 +357,27 @@ export default class Calendar extends Vue {
 
         input {
           text-align: right;
+          font-weight: 400;
+          line-height: 1.5;
+          border: 1px solid transparent;
+          border-radius: 2px;
+          box-shadow: none;
+          transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+          width: inherit;
+        }
+
+        select {
+          flex-grow: 3;
+          padding: 0 0.5em;
         }
 
         > * {
-          flex-basis: 50%;
+          //flex-basis: 50%;
           flex-shrink: 1;
           flex-grow: 1;
-          width: 50%;
           height: auto;
           border: none;
+          font-size: 13px;
 
           &:focus {
             outline: 1px solid #ccc;

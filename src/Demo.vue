@@ -14,11 +14,6 @@
       {{range}}
       <br>
       <offisy-date-picker type="range" v-model="range" dual-inputs>
-        <template #start-date="{}">
-        </template>
-        <template #end-date="{}">
-
-        </template>
       </offisy-date-picker>
     </div>
   </div>

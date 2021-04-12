@@ -104,6 +104,8 @@ export default class Calendar extends Vue {
 
   yearText = ''
 
+  @Prop({ type: String }) selectionType!: 'start' | 'end'
+
   @Watch('year')
   updateYearText () {
     this.yearText = this.year.toString()
@@ -114,7 +116,21 @@ export default class Calendar extends Vue {
   }
 
   get selectionRange (): DateRange | null {
-    if (this.mode === 'selecting' && this.selectionValue && this.hoveringValue) {
+    const value = this.value as DateRange | undefined
+
+    if (this.selectionType === 'end' && value?.startDate && this.hoveringValue) {
+      if (value.startDate < this.hoveringValue) {
+        return {
+          startDate: value.startDate,
+          endDate: this.hoveringValue,
+        }
+      } else {
+        return {
+          startDate: this.hoveringValue,
+          endDate: value.startDate,
+        }
+      }
+    } else if (this.mode === 'selecting' && this.selectionValue && this.hoveringValue) {
       if (this.selectionValue < this.hoveringValue) {
         return {
           startDate: this.selectionValue,
@@ -142,12 +158,16 @@ export default class Calendar extends Vue {
         this.$emit('input', filtered)
       }
     } else if (this.type === 'range') {
-      if (this.mode == null) {
+      if (this.mode == null && this.selectionType !== 'end') {
         this.mode = 'selecting'
         this.selectionValue = day
-      } else if (this.mode === 'selecting') {
+      } else if (this.mode === 'selecting' || this.selectionType === 'end') {
         this.mode = null
-        const a = this.selectionValue
+
+        let a = this.selectionValue
+        if (this.selectionType === 'end') {
+          a = (this.value as DateRange).startDate
+        }
         const b = this.hoveringValue
         if (a && b) {
           if (a < b) {

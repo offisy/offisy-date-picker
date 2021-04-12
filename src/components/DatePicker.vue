@@ -27,12 +27,12 @@
             <slot :discard="discard" :submit="submit" name="actions-row">
               <button :class="okClass" type="button" @click="submit">
                 <slot name="ok-button-text">
-                  Ok
+                   Übernehmen
                 </slot>
               </button>
               <button :class="discardClass" type="button" @click="discard">
                 <slot name="discard-button-text">
-                  Cancel
+                  Abbrechen
                 </slot>
               </button>
             </slot>
@@ -313,8 +313,7 @@ export default class DatePicker extends Vue {
 
 <style lang="scss" scoped>
 
-$primary: #0aa699;
-$danger: #f35958;
+@import '../style';
 
 .calendar-popover {
   background-color: white;

@@ -27,14 +27,14 @@
         <template #actions>
           <div class="actions-row">
             <slot :discard="discard" :submit="submit" name="actions-row">
-              <button :class="okClass" type="button" @click="submit">
-                <slot name="ok-button-text">
-                  Übernehmen
-                </slot>
-              </button>
               <button :class="discardClass" type="button" @click="discard">
                 <slot name="discard-button-text">
                   Abbrechen
+                </slot>
+              </button>
+              <button :class="okClass" type="button" @click="submit">
+                <slot name="ok-button-text">
+                  Übernehmen
                 </slot>
               </button>
             </slot>

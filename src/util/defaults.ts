@@ -11,20 +11,20 @@ interface Defaults {
   presets: {
     range: {
       [key: string]: {
-        title: string;
-        value: (() => DateRange);
+        title: ((date: Date | Date[] | DateRange | null) => string);
+        value: ((date: Date | Date[] | DateRange | null) => DateRange);
       };
     };
     single: {
       [key: string]: {
-        title: string;
-        value: (() => Date);
+        title: ((date: Date | Date[] | DateRange | null) => string);
+        value: ((date: Date | Date[] | DateRange | null) => Date);
       };
     };
     multi: {
       [key: string]: {
-        title: string;
-        value: (() => Date);
+        title: ((date: Date | Date[] | DateRange | null) => string);
+        value: ((date: Date | Date[] | DateRange | null) => Date);
       };
     };
   };
@@ -39,19 +39,19 @@ const defaults: Defaults = {
   presets: {
     range: {
       today: {
-        title: 'Today',
+        title: () => 'Today',
         value: () => ({ startDate: new Date(), endDate: new Date() }),
       },
       yesterday: {
-        title: 'Yesterday',
+        title: () => 'Yesterday',
         value: () => ({ startDate: addDays(new Date(), -1), endDate: addDays(new Date(), -1) }),
       },
       currentMonth: {
-        title: 'Current Month',
+        title: () => 'Current Month',
         value: () => ({ startDate: startOfMonth(new Date()), endDate: endOfMonth(new Date()) }),
       },
       lastMonth: {
-        title: 'Last Month',
+        title: () => 'Last Month',
         value: () => ({
           startDate: startOfMonth(addMonths(new Date(), -1)),
           endDate: endOfMonth(addMonths(new Date(), -1)),

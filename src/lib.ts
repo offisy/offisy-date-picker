@@ -9,6 +9,11 @@ export interface DateRange {
   endDate: Date;
 }
 
+export interface Pane {
+  month: number;
+  year: number;
+}
+
 export interface PluginOptions {
   locale?: Locale;
   okText?: string;
@@ -18,19 +23,19 @@ export interface PluginOptions {
   presets?: {
     range?: {
       [key: string]: {
-        title: string;
+        title: (() => string);
         value: (() => DateRange);
       };
     };
     single?: {
       [key: string]: {
-        title: string;
+        title: (() => string);
         value: (() => Date);
       };
     };
     multi?: {
       [key: string]: {
-        title: string;
+        title: (() => string);
         value: (() => Date);
       };
     };

@@ -1,73 +1,68 @@
-<template>
-  <div class="calendar-pane">
-    <div class="days-wrapper">
-      <div v-for="day in [0,1,2,3,4,5,6]" :key="'weekday-' + day" class="weekday-name">
-        {{ weekDayName(days[day]) }}
-      </div>
-      <calendar-day v-for="(day, index) in days" :key="index"
-                    :date="day"
-                    :disabled="isDisabled(day)"
-                    :display-type="getDisplayType(day)"
-                    :outside-range="isOutsideMonth(day)"
-                    @click="$emit('day-clicked', day, $event)"
-                    @mouseenter="$emit('day-hovered', day)"
-      />
-    </div>
-  </div>
-</template>
+<template src="./CalendarPane.html"></template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import {
+  add,
   addDays,
   format,
   getMonth,
   getWeeksInMonth,
   isSameDay,
   isWithinInterval,
+  setMonth,
   startOfDay,
   startOfWeek,
 } from 'date-fns'
 import CalendarDay from '@/components/CalendarDay.vue'
 import { CalendarType, DateRange } from '@/lib'
+import generateArrayOfYears from '@/util/date'
 
 @Component({
   components: { CalendarDay },
-  filters: {},
+  filters: {
+    monthName (month: number, locale: Locale) {
+      const date = setMonth(new Date(), month)
+      return format(date, 'MMMM', { locale })
+    },
+  },
 })
+/* eslint-disable */
 export default class CalendarPane extends Vue {
-  @Prop({ type: Number, required: true }) year!: number;
-  @Prop({ type: Number, required: true, validator: value => value >= 0 && value < 12 }) month!: number;
-  @Prop({ required: true }) type!: CalendarType;
-  @Prop() previewRange!: DateRange | null;
-  @Prop({}) locale!: Locale;
+  @Prop({
+    type: Number,
+    required: true,
+    validator: value => value >= 0 && value < 12,
+  }) month!: number
+  localMonth: number = 1
 
-  @Prop({ type: Date }) min?: Date;
-  @Prop({ type: Date }) max?: Date;
+  @Prop({
+    type: Number,
+    required: true,
+  }) year!: number
+
+  localYear: number = 0
+
+  @Prop({ required: true }) type!: CalendarType
+  @Prop({}) locale!: Locale
+
+  @Prop({ type: Date }) min?: Date
+  @Prop({ type: Date }) max?: Date
 
   @Prop() value!: Date | Date[] | DateRange | null
+  @Prop() selectionValue: Date | null = null
+  @Prop() hoveringValue: Date | null = null
+  @Prop({ type: String }) selectionType!: 'start' | 'end'
+  @Prop() mode: 'selecting' | null = null
 
-  get days (): Date[] {
-    const date = new Date(this.year, this.month)
-    const weekCount = getWeeksInMonth(date, { weekStartsOn: 1 })
-
-    let curDate = startOfWeek(date, { weekStartsOn: 1 })
-    const dates: Date[] = []
-
-    for (let i = 0; i < weekCount; i++) {
-      for (let weekday = 0; weekday < 7; weekday++) {
-        dates.push(curDate)
-        curDate = addDays(curDate, 1)
-      }
-    }
-
-    return dates
+  mounted () {
+    this.setMonthYear()
   }
 
   getDisplayType (date: Date): 'selected' | 'start' | 'end' | 'between' | null {
     let value = this.value
-    if (this.previewRange !== null) {
-      value = this.previewRange
+    if (this.datesRange !== null) {
+      value = this.datesRange
     } else if (this.value === null) return null
 
     switch (this.type) {
@@ -104,7 +99,7 @@ export default class CalendarPane extends Vue {
   }
 
   isOutsideMonth (date: Date) {
-    return getMonth(date) !== this.month
+    return getMonth(date) !== this.localMonth
   }
 
   weekDayName (date: Date) {
@@ -115,10 +110,136 @@ export default class CalendarPane extends Vue {
     day = startOfDay(day)
     if (this.min && day < startOfDay(this.min)) {
       return true
-    } else if (this.max && day > startOfDay(this.max)) {
+    }
+
+    if (this.max && day > startOfDay(this.max)) {
       return true
     }
+
     return false
+  }
+
+  addMonths (months: number) {
+    let month = this.localMonth
+    let year = this.localYear
+
+    if (months < 0) {
+      month += months
+      while (month < 0) {
+        month += 12
+        year -= 1
+      }
+    }
+    if (months > 0) {
+      month += months
+      while (month > 11) {
+        month -= 12
+        year += 1
+      }
+    }
+
+    const date = new Date(this.year, this.month)
+    if (this.max && date > this.max) {
+      this.localMonth = this.max.getMonth()
+      this.localYear = this.max.getFullYear()
+      return
+    }
+
+    if (this.min && date < this.min) {
+      this.localMonth = this.min.getMonth()
+      this.localYear = this.min.getFullYear()
+      return
+    }
+
+    this.localMonth = month
+    this.localYear = year
+
+    // this.$emit('update:month', month)
+    // this.$emit('update:year', year)
+  }
+
+  get formattedMonth () {
+    const date = new Date(this.year, this.month)
+    return format(date, 'MMMM', { locale: this.locale })
+  }
+
+  get days (): Date[] {
+    const date = new Date(this.localYear, this.localMonth)
+    const weekCount = getWeeksInMonth(date, { weekStartsOn: 1 })
+
+    let curDate = startOfWeek(date, { weekStartsOn: 1 })
+    const dates: Date[] = []
+
+    for (let i = 0; i < weekCount; i++) {
+      for (let weekday = 0; weekday < 7; weekday++) {
+        dates.push(curDate)
+        curDate = addDays(curDate, 1)
+      }
+    }
+
+    return dates
+  }
+
+  get months () {
+    return Array.from(new Array(12).keys())
+  }
+
+  get years () {
+    const min = this.min || new Date('2000')
+    const max = this.max || add(new Date(), { years: 10})
+
+    return generateArrayOfYears(min.getFullYear(), max.getFullYear())
+  }
+
+  get datesRange (): DateRange | null {
+    const value = this.value as DateRange | undefined
+
+    if (this.selectionType === 'end' && value?.startDate && this.hoveringValue) {
+      if (value.startDate < this.hoveringValue) {
+        return {
+          startDate: value.startDate,
+          endDate: this.hoveringValue,
+        }
+      } else {
+        return {
+          startDate: this.hoveringValue,
+          endDate: value.startDate,
+        }
+      }
+    } else if (this.mode === 'selecting' && this.selectionValue && this.hoveringValue) {
+      if (this.selectionValue < this.hoveringValue) {
+        return {
+          startDate: this.selectionValue,
+          endDate: this.hoveringValue,
+        }
+      } else {
+        return {
+          startDate: this.hoveringValue,
+          endDate: this.selectionValue,
+        }
+      }
+    }
+    return null
+  }
+
+  setMonthYear () {
+    const value = this.value
+    if (!value) {
+      this.localMonth = (new Date()).getMonth()
+      this.localYear = (new Date()).getFullYear()
+      return
+    }
+
+    switch (this.type) {
+      case 'single':
+        this.localMonth = (value as Date).getMonth()
+        this.localYear = (value as Date).getFullYear()
+        break
+      case 'range':
+        this.localMonth = (value as DateRange).startDate.getMonth()
+        this.localYear = (value as DateRange).startDate.getFullYear()
+        break
+    }
   }
 }
 
@@ -132,6 +253,70 @@ $primary: #0aa699;
   display: block;
   width: 100%;
   height: 100%;
+
+  .calendar-menu {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .calendar-header-title {
+      margin: 0.5em;
+    }
+
+    .calendar-prev-button, .calendar-next-button {
+      flex-grow: 0;
+      border: none;
+      width: 4em;
+      height: 2.5em;
+      display: block;
+      background: none;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: bold;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.1);;
+      }
+
+      &:focus {
+        outline: none
+      }
+    }
+
+    .calendar-prev-button {
+      margin-right: 1em;
+
+      .calendar-prev-icon::after {
+        font-size: 18px;
+        border-style: solid;
+        border-width: 0.25em 0.25em 0 0;
+        content: '';
+        display: inline-block;
+        height: 0.25em;
+        position: relative;
+        top: 0.15em;
+        vertical-align: top;
+        width: 0.25em;
+        left: 0.15em;
+        transform: rotate(-135deg);
+      }
+    }
+
+    .calendar-next-icon::after {
+      font-size: 18px;
+      border-style: solid;
+      border-width: 0.25em 0.25em 0 0;
+      content: '';
+      display: inline-block;
+      height: 0.25em;
+      position: relative;
+      top: 0.15em;
+      vertical-align: top;
+      width: 0.25em;
+      left: 0.0em;
+      transform: rotate(45deg);
+    }
+  }
 
   .days-wrapper {
     display: grid;

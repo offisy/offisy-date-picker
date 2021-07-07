@@ -19,7 +19,7 @@
     <div v-show="popoverShowing" ref="popover" class="calendar-popover">
       <calendar :calendar-height="calendarHeight" :calendar-width="calendarWidth" :max="max" :min="min"
                 :month.sync="month" :type="type" :value="localValue" :year.sync="year" @input="onInput"
-                :selection-type="selectionType"
+                :selection-type="selectionType" :dual-calendar-pane="dualCalendarPane"
       >
         <template v-for="(_, name) of $scopedSlots" v-slot:[name]="scope">
           <slot v-bind="scope" :name="name"></slot>
@@ -53,6 +53,7 @@ import { format, parse } from 'date-fns'
 import Calendar from '@/components/Calendar.vue'
 import { createPopper, Instance } from '@popperjs/core'
 import { ClickOutside } from '@/directives/ClickOutside'
+import { parseDate } from '@/util/parseDate'
 
 @Component({
   components: { Calendar },
@@ -74,9 +75,10 @@ export default class DatePicker extends Vue {
 
   @Prop({ default: 'ok-button' }) okClass!: string
   @Prop({ default: 'discard-button' }) discardClass!: string
-  @Prop({ default: 256 }) calendarWidth!: number
+  @Prop({ default: 512 }) calendarWidth!: number
   @Prop({ default: 256 }) calendarHeight!: number
   @Prop({ type: Boolean }) dualInputs!: boolean
+  @Prop({ type: Boolean }) dualCalendarPane!: boolean
 
   @Prop({ type: Date }) min?: Date
   @Prop({ type: Date }) max?: Date
@@ -225,22 +227,13 @@ export default class DatePicker extends Vue {
         // eslint-disable-next-line no-case-declarations
         parts = value.replace(/[^0-9.-]*/gm, '').split('-')
         if (parts.length !== 2) return this.formatValue()
+
         // eslint-disable-next-line no-case-declarations
-        let [startDate, endDate] = [new Date(), new Date()]
+        let startDate: boolean | Date = parseDate(parts[0])
+        // eslint-disable-next-line no-case-declarations
+        let endDate: boolean | Date = parseDate(parts[1])
 
-        startDate = parse(parts[0].trim(), 'dd.MM.yyyy', new Date())
-        if (isNaN(startDate.getTime())) startDate = parse(parts[0].trim(), 'ddMMyyyy', new Date())
-        endDate = parse(parts[1].trim(), 'dd.MM.yyyy', new Date())
-
-        if (isNaN(endDate.getTime())) endDate = parse(parts[1].trim(), 'ddMMyyyy', new Date())
-        if (isNaN(startDate.getTime())) {
-          startDate = endDate
-        }
-        if (isNaN(endDate.getTime())) {
-          endDate = startDate
-        }
-
-        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        if (!startDate || !endDate) {
           this.formatValue()
         }
 
@@ -353,6 +346,7 @@ export default class DatePicker extends Vue {
   flex-direction: column;
 
   z-index: 100;
+  top: -30px;
 
   .actions-row {
     display: flex;

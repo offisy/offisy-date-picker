@@ -2,7 +2,7 @@
   <div id="app">
     <div>
       <h3>Single</h3>
-      <offisy-date-picker type="single" v-model="single"  :min="max">
+      <offisy-date-picker type="single" v-model="single" :min="max">
       </offisy-date-picker>
 
       <h3>Multi</h3>
@@ -11,19 +11,24 @@
       <h3>Range</h3>
       <offisy-date-picker type="range" v-model="range"/>
       <br>
-      {{range}}
+      {{ range }}
       <br>
-      <offisy-date-picker type="range" v-model="range" dual-inputs>
+      <offisy-date-picker type="range" v-model="range" dual-inputs dual-calendar-pane>
       </offisy-date-picker>
+
+      <h3>Test Date Parse</h3>
+      <input type="text" v-model="testParseDateValue">
+      <pre>{{ testParseDate }}</pre>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Vue, Watch } from 'vue-property-decorator'
 
 import './lib'
 import { addDays } from 'date-fns'
+import { parseDate } from '@/util/parseDate'
 
 @Component
 export default class Demo extends Vue {
@@ -32,6 +37,15 @@ export default class Demo extends Vue {
   range = null
 
   max = new Date()
+  testParseDateValue = '2.3'
+  testParseDate: Date | boolean = parseDate(this.testParseDateValue)
+
+  @Watch('testParseDateValue')
+  watchFoo () {
+    this.testParseDate = parseDate(this.testParseDateValue)
+  }
+
+  // foo4 = parseDate('')
 }
 
 </script>

@@ -1,0 +1,65 @@
+<div class="calendar-pane">
+    <div class="calendar-menu">
+<!--        {{localMonth}}-->
+<!--        {{localYear}}-->
+<!--        {{min}}-->
+<!--        {{max}}-->
+        <slot name="header"
+              :year="year" :month="month"
+              :formattedMonth="formattedMonth"
+              :addMonths="addMonths"
+        >
+            <button class="calendar-prev-button" @click="addMonths(-1)">
+                <slot name="prev-button-text">
+                    <div class="calendar-prev-icon">
+                    </div>
+                </slot>
+            </button>
+            <h4 class="calendar-header-title">
+                <slot name="headerSelectMonth"
+                :month="localMonth"
+                >
+
+                <select class="calendar-month-select"
+                        v-model="localMonth"
+                        @input="$emit('update:month', parseInt($event.target.value))">
+                    <option v-for="month in months" :value="month" :key="month">
+                        {{ month | monthName(locale) }}
+                    </option>
+                </select>
+                </slot>
+
+                <select class="calendar-year-select"
+                        v-model="localYear"
+                        @input="$emit('update:year', parseInt($event.target.value))">
+                    <option v-for="year in years" :value="year" :key="year">
+                        {{ year  }}
+                    </option>
+                </select>
+
+<!--                <input v-model="yearText" @change="$emit('update:year', parseInt(yearText))"-->
+<!--                       type="number">-->
+            </h4>
+            <button class="calendar-next-button" @click="addMonths(1)">
+                <slot name="next-button-text">
+                    <div class="calendar-next-icon">
+                    </div>
+                </slot>
+            </button>
+        </slot>
+    </div>
+
+    <div class="days-wrapper">
+        <div v-for="day in [0,1,2,3,4,5,6]" :key="'weekday-' + day" class="weekday-name">
+            {{ weekDayName(days[day]) }}
+        </div>
+        <calendar-day v-for="(day, index) in days" :key="index"
+                      :date="day"
+                      :disabled="isDisabled(day)"
+                      :display-type="getDisplayType(day)"
+                      :outside-range="isOutsideMonth(day)"
+                      @click="$emit('day-clicked', day, $event)"
+                      @mouseenter="$emit('day-hovered', day)"
+        />
+    </div>
+</div>

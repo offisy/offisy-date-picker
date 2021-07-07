@@ -1,0 +1,55 @@
+<div class="calendar">
+    <div class="calendar-side-pane" v-if="datePresets.length > 0">
+        <ul>
+            <li v-for="preset in datePresets" :key="preset.id" @click="selectValue(preset.value)"
+                :class="{active: isPresetSelected(preset.value)}">
+                {{ preset.name }}
+            </li>
+        </ul>
+    </div>
+
+<!--    :style="{width: `${calendarWidth}px`, height: `${calendarHeight}px`}"-->
+    <div class="calendar-body" >
+        <div class="calendar-header-input">
+            <slot name="header-input">
+                <input v-model="textValue[0]" type="text" @change="onTextInput">
+                <span style="margin: 0 1em">&ndash;</span>
+                <input v-model="textValue[1]" type="text" @change="onTextInput"/>
+            </slot>
+        </div>
+        <div class="calendar-panes">
+            <calendar-pane
+                    v-if="panes[0]"
+                    :type="type"
+                    :value="value"
+                    :locale="locale"
+                    :month="panes[0].month"
+                    :year="panes[0].year"
+                    :max="max"
+                    :min="min"
+                    :selection-value="selectionValue"
+                    :hovering-value="hoveringValue"
+                    :selection-type="selectionType"
+                    :mode="mode"
+                    @day-clicked="onDayClicked"
+                    @day-hovered="hoveringValue = $event"
+            />
+
+<!--            <calendar-pane-->
+<!--                    v-if="dualCalendarPane"-->
+<!--                    :type="type"-->
+<!--                    :value="value"-->
+<!--                    :month="1"-->
+<!--                    :year="2021"-->
+<!--                    :locale="locale"-->
+<!--                    :preview-range="selectionRange"-->
+<!--                    :max="max"-->
+<!--                    :min="min"-->
+<!--                    @day-clicked="onDayClicked"-->
+<!--                    @day-hovered="hoveringValue = $event"-->
+<!--            />-->
+        </div>
+
+        <slot name="actions"/>
+    </div>
+</div>
